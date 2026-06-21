@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <!-- 适配 390px 手机竖屏 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ff6b35" />
+  <title>健身打卡</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- 本地引入 Vue 3 生产版，避免截图时无网络 -->
+  <script src="lib/vue.global.prod.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- 顶部标题栏 -->
+    <header class="app-header">
+      <div class="header-title">{{ tabTitle }}</div>
+      <div class="header-sub" v-if="tab === 'home'">坚持运动，记录每一天</div>
+    </header>
+
+    <main class="app-main">
+      <!-- ============ 首页 / 今日 ============ -->
+      <section v-if="tab === 'home'" class="page">
+        <!-- 连续打卡 banner -->
+        <div class="streak-card">
+          <div class="streak-flame">🔥</div>
+          <div class="streak-info">
+            <div class="streak-num">{{ stats.streak }} <span>天</span></div>
+            <div class="streak-label">连续打卡</div>
+          </div>
+        </div>
+
+        <!-- 今日数据三宫格 -->
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-val">{{ stats.todayCount }}</div>
+            <div class="stat-name">今日打卡</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">{{ stats.todayMinutes }}<i>分</i></div>
+            <div class="stat-name">今日时长</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val">{{ stats.weekTotal }}<i>分</i></div>
+            <div class="stat-name">本周时长</div>
+          </div>
+        </div>
+
+        <!-- 最近打卡 -->
+        <div class="section-title">最近打卡</div>
+        <div v-if="recent.length === 0" class="empty">还没有打卡，去运动一下吧！</div>
+        <div v-for="item in recent" :key="item.id" class="record-card">
+          <div class="record-icon">{{ sportIcon(item.sport) }}</div>
+          <div class="record-body">
+            <div class="record-top">
+              <span class="record-sport">{{ item.sport }}</span>
+              <span class="badge" :class="intensityClass(item.intensity)">{{ item.intensity }}</span>
+            </div>
+            <div class="record-note" v-if="item.note">{{ item.note }}</div>
+            <div class="record-meta">{{ item.date }} · {{ item.minutes }} 分钟</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 打卡（新增） ============ -->
+      <section v-if="tab === 'add'" class="page">
+        <div class="form-card">
+          <div class="form-label">运动类型</div>
+          <div class="sport-picker">
+            <div
+              v-for="s in sports"
+              :key="s.name"
+              class="sport-item"
+              :class="{ active: form.sport === s.name }"
+              @click="form.sport = s.name"
+            >
+              <div class="sport-emoji">{{ s.icon }}</div>
+              <div class="sport-text">{{ s.name }}</div>
+            </div>
+          </div>
+
+          <div class="form-label">时长（分钟）</div>
+          <div class="minutes-row">
+            <button class="step-btn" @click="form.minutes = Math.max(0, form.minutes - 5)">−</button>
+            <input type="number" class="minutes-input" v-model.number="form.minutes" min="0" />
+            <button class="step-btn" @click="form.minutes += 5">＋</button>
+          </div>
+          <div class="quick-row">
+            <span v-for="q in [15,30,45,60]" :key="q" class="quick-chip" @click="form.minutes = q">{{ q }}分</span>
+          </div>
+
+          <div class="form-label">强度</div>
+          <div class="intensity-row">
+            <div
+              v-for="lv in intensities"
+              :key="lv"
+              class="intensity-item"
+              :class="[intensityClass(lv), { active: form.intensity === lv }]"
+              @click="form.intensity = lv"
+            >{{ lv }}</div>
+          </div>
+
+          <div class="form-label">日期</div>
+          <input type="date" class="text-input" v-model="form.date" />
+
+          <div class="form-label">备注</div>
+          <input type="text" class="text-input" v-model="form.note" placeholder="今天的运动感受…" maxlength="50" />
+
+          <button class="submit-btn" @click="submit">完成打卡 ✓</button>
+          <div class="form-tip" v-if="tip">{{ tip }}</div>
+        </div>
+      </section>
+
+      <!-- ============ 历史记录 ============ -->
+      <section v-if="tab === 'history'" class="page">
+        <div class="section-title">全部记录（{{ checkins.length }}）</div>
+        <div v-if="checkins.length === 0" class="empty">暂无打卡记录</div>
+        <div v-for="item in checkins" :key="item.id" class="record-card">
+          <div class="record-icon">{{ sportIcon(item.sport) }}</div>
+          <div class="record-body">
+            <div class="record-top">
+              <span class="record-sport">{{ item.sport }}</span>
+              <span class="badge" :class="intensityClass(item.intensity)">{{ item.intensity }}</span>
+            </div>
+            <div class="record-note" v-if="item.note">{{ item.note }}</div>
+            <div class="record-meta">{{ item.date }} · {{ item.minutes }} 分钟</div>
+          </div>
+          <button class="del-btn" @click="del(item.id)">删除</button>
+        </div>
+      </section>
+
+      <!-- ============ 统计 ============ -->
+      <section v-if="tab === 'stats'" class="page">
+        <div class="section-title">本周运动时长</div>
+        <div class="chart-card">
+          <div class="bar-chart">
+            <div v-for="d in stats.weekDays" :key="d.date" class="bar-col">
+              <div class="bar-val">{{ d.minutes || '' }}</div>
+              <div class="bar-track">
+                <div class="bar-fill" :style="{ height: barHeight(d.minutes) }"></div>
+              </div>
+              <div class="bar-label">{{ d.label }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">运动类型占比</div>
+        <div class="chart-card">
+          <div v-if="stats.sportStats && stats.sportStats.length === 0" class="empty">暂无数据</div>
+          <div v-for="s in stats.sportStats" :key="s.sport" class="ratio-row">
+            <div class="ratio-head">
+              <span>{{ sportIcon(s.sport) }} {{ s.sport }}</span>
+              <span class="ratio-pct">{{ s.minutes }}分 · {{ s.percent }}%</span>
+            </div>
+            <div class="ratio-track">
+              <div class="ratio-fill" :style="{ width: s.percent + '%' }"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="total-card">
+          <div>累计打卡 <b>{{ stats.totalCount }}</b> 次</div>
+          <div>累计时长 <b>{{ stats.totalMinutes }}</b> 分钟</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============ 底部 tab 栏 ============ -->
+    <nav class="tab-bar">
+      <div class="tab-item" :class="{ active: tab === 'home' }" @click="go('home')">
+        <div class="tab-ico">🏠</div><div class="tab-txt">今日</div>
+      </div>
+      <div class="tab-item" :class="{ active: tab === 'history' }" @click="go('history')">
+        <div class="tab-ico">📋</div><div class="tab-txt">历史</div>
+      </div>
+      <div class="tab-item tab-add" @click="go('add')">
+        <div class="add-circle">＋</div>
+      </div>
+      <div class="tab-item" :class="{ active: tab === 'stats' }" @click="go('stats')">
+        <div class="tab-ico">📊</div><div class="tab-txt">统计</div>
+      </div>
+      <div class="tab-item" :class="{ active: tab === 'add' }" @click="go('add')">
+        <div class="tab-ico">✏️</div><div class="tab-txt">打卡</div>
+      </div>
+    </nav>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

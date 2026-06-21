@@ -1,0 +1,11 @@
+{
+  "name": "fitness-checkin",
+  "version": "1.0.0",
+  "description": "移动端 H5 应用：健身打卡（运动健身打卡记录）—— 纯 Node.js 内置模块实现",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "allen_zhang",
+  "license": "MIT"
+}

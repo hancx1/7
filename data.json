@@ -1,0 +1,76 @@
+{
+  "checkins": [
+    {
+      "id": 1,
+      "sport": "跑步",
+      "minutes": 35,
+      "intensity": "适中",
+      "note": "晨跑环湖一圈",
+      "date": "2026-06-18",
+      "created_at": "2026-06-18T07:19:11.808Z"
+    },
+    {
+      "id": 2,
+      "sport": "健身房",
+      "minutes": 50,
+      "intensity": "高强度",
+      "note": "胸 + 三头训练",
+      "date": "2026-06-18",
+      "created_at": "2026-06-18T07:19:11.808Z"
+    },
+    {
+      "id": 3,
+      "sport": "骑行",
+      "minutes": 60,
+      "intensity": "适中",
+      "note": "通勤往返",
+      "date": "2026-06-17",
+      "created_at": "2026-06-17T07:19:11.808Z"
+    },
+    {
+      "id": 4,
+      "sport": "游泳",
+      "minutes": 40,
+      "intensity": "高强度",
+      "note": "自由泳 1000m",
+      "date": "2026-06-16",
+      "created_at": "2026-06-16T07:19:11.808Z"
+    },
+    {
+      "id": 5,
+      "sport": "瑜伽",
+      "minutes": 45,
+      "intensity": "轻松",
+      "note": "睡前拉伸放松",
+      "date": "2026-06-15",
+      "created_at": "2026-06-15T07:19:11.808Z"
+    },
+    {
+      "id": 6,
+      "sport": "球类",
+      "minutes": 70,
+      "intensity": "高强度",
+      "note": "周末打篮球",
+      "date": "2026-06-14",
+      "created_at": "2026-06-14T07:19:11.808Z"
+    },
+    {
+      "id": 7,
+      "sport": "步行",
+      "minutes": 30,
+      "intensity": "轻松",
+      "note": "饭后散步",
+      "date": "2026-06-13",
+      "created_at": "2026-06-13T07:19:11.808Z"
+    },
+    {
+      "id": 8,
+      "sport": "跑步",
+      "minutes": 25,
+      "intensity": "适中",
+      "note": "操场五公里",
+      "date": "2026-06-12",
+      "created_at": "2026-06-12T07:19:11.808Z"
+    }
+  ]
+}
